@@ -184,3 +184,6 @@ configs/secrets.yaml
 # Environment variables
 .env
 .env.*
+
+description.md
+task.md

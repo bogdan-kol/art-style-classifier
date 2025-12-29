@@ -14,7 +14,7 @@ from art_style_classifier.config import Config, load_config
 @hydra.main(  # type: ignore[misc]
     config_path="../configs", config_name="main", version_base="1.3"
 )
-def train(cfg: DictConfig) -> None:
+def train(cfg: DictConfig, max_samples: Optional[int] = None) -> None:
     """Hydra-powered training entrypoint (internal).
 
     Args:
@@ -63,11 +63,26 @@ def predict(
     print("\n Prediction pipeline ready!")
 
 
-def download_data(use_dvc: bool = True, push: bool = False) -> None:
-    """Download WikiArt dataset with optional DVC tracking."""
+def download_test(n_samples: int = 100) -> None:
+    """Download a test subset of WikiArt dataset."""
+    from art_style_classifier.data.test_download import download_test_subset
+
+    download_test_subset(n_samples=n_samples)
+
+
+def download_data(
+    use_dvc: bool = True, push: bool = False, max_samples: Optional[int] = None
+) -> None:
+    """Download WikiArt dataset with optional DVC tracking.
+
+    Args:
+        use_dvc: Track data with DVC (default: True)
+        push: Push to DVC remote after download (default: False)
+        max_samples: Maximum number of samples to download (for testing)
+    """
     from art_style_classifier.data.download import download_command
 
-    download_command(use_dvc=use_dvc, push=push)
+    download_command(use_dvc=use_dvc, push=push, max_samples=max_samples)
 
 
 def show_config(
@@ -103,7 +118,8 @@ if __name__ == "__main__":
         {
             "train": train,
             "predict": predict,
-            "download": download_data,
+            "download": download_data,  # полная загрузка
+            "download_test": download_test,  # тестовая загрузка
             "config": show_config,
             "test": config_test,
             "list": list_configs,
