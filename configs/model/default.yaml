@@ -1,0 +1,6 @@
+name: art_style_classifier
+architecture: efficientnet_b0
+num_classes: 27
+pretrained: true
+freeze_backbone: false
+dropout_rate: 0.2

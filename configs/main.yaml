@@ -1,0 +1,9 @@
+﻿defaults:
+  - data: default
+  - model: default
+  - training: default
+  - logging: default
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
