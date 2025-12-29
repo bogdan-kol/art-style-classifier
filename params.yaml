@@ -1,0 +1,58 @@
+data:
+  name: wikiart
+  source: huggingface
+  url: https://huggingface.co/datasets/huggan/wikiart
+  paths:
+    raw: data/raw/wikiart
+    processed: data/processed
+  splits:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+  preprocessing:
+    image_size:
+      - 224
+      - 224
+    mean:
+      - 0.485
+      - 0.456
+      - 0.406
+    std:
+      - 0.229
+      - 0.224
+      - 0.225
+model:
+  architecture: efficientnet-b0
+  num_classes: 27
+  pretrained: true
+  freeze_backbone: false
+  optimizer:
+    name: adamw
+    lr: 0.001
+    weight_decay: 0.01
+  scheduler:
+    name: cosine
+    warmup_epochs: 5
+    max_epochs: 50
+training:
+  batch_size: 32
+  num_epochs: 30
+  num_workers: 4
+  device: cuda
+  early_stopping:
+    patience: 10
+    min_delta: 0.001
+  checkpoint:
+    save_top_k: 3
+    monitor: val_loss
+    mode: min
+logging:
+  mlflow:
+    tracking_uri: http://localhost:5000
+    experiment_name: art-style-classifier
+  wandb:
+    project: art-style-classifier
+    entity: null
+dvc:
+  remote: local
+  remote_type: local

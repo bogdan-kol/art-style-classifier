@@ -180,3 +180,7 @@ Thumbs.db
 # Config files with secrets
 configs/secrets.yaml
 *.env
+
+# Environment variables
+.env
+.env.*
