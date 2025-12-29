@@ -16,13 +16,20 @@ class DataConfig:
     data_dir: str = "data"
     raw_dir: str = "data/raw/wikiart"
     processed_dir: str = "data/processed"
+
+    image_size: tuple[int, int] = (224, 224)
+
     splits: dict[str, float] = field(
         default_factory=lambda: {"train": 0.7, "val": 0.15, "test": 0.15}
     )
     batch_size: int = 32
     num_workers: int = 4
     random_seed: int = 42
-    image_size: list[int] = field(default_factory=lambda: [224, 224])
+    pin_memory: bool = True
+    persistent_workers: bool = True
+
+    # Добавь новое поле для subset
+    train_subset_ratio: float = 1.0  # По умолчанию используем все данные
 
 
 @dataclass
@@ -41,9 +48,9 @@ class ModelConfig:
 class TrainingConfig:
     """Training configuration."""
 
-    max_epochs: int = 30
+    max_epochs: int = 5
     learning_rate: float = 0.001
-    batch_size: int = 32
+    batch_size: int = 16
     gradient_clip_val: float = 1.0
     early_stopping_patience: int = 10
     checkpoint_monitor: str = "val_loss"

@@ -1,6 +1,6 @@
-max_epochs: 30
+max_epochs: 5
 learning_rate: 0.001
-batch_size: 32
+batch_size: 16
 gradient_clip_val: 1.0
 early_stopping_patience: 10
 checkpoint_monitor: val_loss

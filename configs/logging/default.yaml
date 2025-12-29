@@ -1,4 +1,4 @@
 experiment_name: art-style-classifier
 tracker: mlflow
-tracking_uri: http://localhost:5000
+tracking_uri: http://127.0.0.1:8080
 log_every_n_steps: 50

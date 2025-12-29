@@ -146,6 +146,7 @@ cython_debug/
 
 # MLFlow
 mlruns/
+mlflow.db
 
 # Data
 data/raw/
@@ -187,3 +188,9 @@ configs/secrets.yaml
 
 description.md
 task.md
+
+# Outputs, checkpoints and caches
+outputs/
+checkpoints/
+*.ckpt
+.ruff_cache/

@@ -1,0 +1,6 @@
+name: art_style_classifier_baseline
+architecture: resnet18
+num_classes: 27
+pretrained: true
+freeze_backbone: true
+dropout_rate: 0.0

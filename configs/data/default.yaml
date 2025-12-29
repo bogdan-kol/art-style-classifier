@@ -6,7 +6,8 @@ splits:
   train: 0.7
   val: 0.15
   test: 0.15
-batch_size: 32
+batch_size: 16
 num_workers: 4
 random_seed: 42
 image_size: [224, 224]
+train_subset_ratio: 1.0 # Use only this fraction of training data (0.0-1.0, for quick testing)
