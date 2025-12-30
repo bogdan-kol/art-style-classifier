@@ -14,6 +14,7 @@ from pytorch_lightning.loggers import MLFlowLogger
 
 from art_style_classifier.config import Config, load_config
 from art_style_classifier.data.dataset import WikiArtDataModule
+from art_style_classifier.models.advanced import AdvancedModel
 from art_style_classifier.models.baseline import BaselineModel
 from art_style_classifier.utils.git import get_git_commit_id
 
@@ -26,6 +27,13 @@ def _train_impl(cfg: DictConfig) -> None:
     """
     # Convert to our Config class
     config = Config.from_hydra(cfg)
+
+    # Set global seeds for reproducibility
+    try:
+        pl.seed_everything(config.data.random_seed, workers=True)
+    except TypeError:
+        # Older PL versions may not accept workers kwarg
+        pl.seed_everything(config.data.random_seed)
 
     print("=" * 60)
     print("Art Style Classifier - Training")
@@ -50,20 +58,32 @@ def _train_impl(cfg: DictConfig) -> None:
     data_module = WikiArtDataModule(config.data)
     data_module.setup("fit")
 
-    # Create model (baseline: ResNet18)
-    if config.model.architecture == "resnet18" or config.model.architecture.startswith(
-        "baseline"
-    ):
+    # Create model
+    arch = config.model.architecture
+    if arch == "resnet18" or arch.startswith("baseline"):
         print("\nCreating baseline ResNet18 model...")
         model = BaselineModel(
             num_classes=config.model.num_classes,
             learning_rate=config.training.learning_rate,
             freeze_backbone=True,  # Baseline: freeze backbone
         )
+    elif arch.startswith("efficientnet") or arch.startswith("efficient"):
+        print("\nCreating Advanced EfficientNet model...")
+        # Use AdvancedModel for EfficientNet family
+        model = AdvancedModel(
+            num_classes=config.model.num_classes,
+            learning_rate=config.training.learning_rate,
+            weight_decay=getattr(config.training, "weight_decay", 1e-2),
+            dropout_rate=config.model.dropout_rate,
+            pretrained=config.model.pretrained,
+            unfreeze_backbone=bool(getattr(config.model, "unfreeze_backbone", False)),
+            lr_scheduler=getattr(config.training, "lr_scheduler", "ReduceLROnPlateau"),
+            lr_factor=getattr(config.training, "lr_factor", 0.1),
+            lr_patience=getattr(config.training, "lr_patience", 3),
+        )
     else:
         raise ValueError(
-            f"Model architecture '{config.model.architecture}' not implemented yet. "
-            "Use 'resnet18' or 'baseline' for baseline model."
+            f"Model architecture '{config.model.architecture}' not implemented yet."
         )
 
     # Setup MLflow logger
@@ -80,9 +100,11 @@ def _train_impl(cfg: DictConfig) -> None:
         "num_classes": config.model.num_classes,
         "batch_size": config.data.batch_size,
         "learning_rate": config.training.learning_rate,
+        "weight_decay": getattr(config.training, "weight_decay", None),
         "max_epochs": config.training.max_epochs,
         "image_size": config.data.image_size,
         "random_seed": config.data.random_seed,
+        "train_subset_ratio": getattr(config.data, "train_subset_ratio", 1.0),
         "git_commit_id": git_commit_id,
     }
     mlflow_logger.log_hyperparams(hyperparams)

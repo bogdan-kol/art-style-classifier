@@ -1,0 +1,10 @@
+fastapi>=0.95.0
+uvicorn[standard]>=0.21.0
+python-multipart>=0.0.6
+pillow>=9.0.0
+
+# The project already depends on torch / torchvision / pytorch_lightning in development
+# If you don't have them in the runtime image, uncomment these:
+# torch
+# torchvision
+# pytorch-lightning

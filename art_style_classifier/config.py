@@ -42,6 +42,8 @@ class ModelConfig:
     pretrained: bool = True
     freeze_backbone: bool = False
     dropout_rate: float = 0.2
+    # If true, unfreeze backbone during training (for fine-tuning)
+    unfreeze_backbone: bool = False
 
 
 @dataclass
@@ -54,6 +56,11 @@ class TrainingConfig:
     gradient_clip_val: float = 1.0
     early_stopping_patience: int = 10
     checkpoint_monitor: str = "val_loss"
+    # Optimizer / LR scheduling parameters
+    weight_decay: float = 1e-2
+    lr_scheduler: str = "ReduceLROnPlateau"
+    lr_factor: float = 0.1
+    lr_patience: int = 3
 
 
 @dataclass

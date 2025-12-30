@@ -1,4 +1,5 @@
 ﻿defaults:
+  - _self_
   - data: default
   - model: default
   - training: default
