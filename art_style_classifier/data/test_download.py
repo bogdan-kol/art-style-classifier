@@ -11,7 +11,7 @@ from art_style_classifier.config import DataConfig
 
 
 def download_test_subset(n_samples: int = 100) -> bool:
-    """Download a small subset for testing."""
+    """Загружает маленькую подвыборку для тестирования."""
     cfg = DataConfig()
 
     print(f"Downloading {n_samples} samples from WikiArt for testing...")
@@ -25,7 +25,7 @@ def download_test_subset(n_samples: int = 100) -> bool:
 
     print(f"Loaded {num_samples} samples")
 
-    # Простая разбивка
+    # Простое разделение
     indices = list(range(num_samples))
     train_idx, temp_idx = train_test_split(
         indices, train_size=cfg.splits["train"], random_state=cfg.random_seed

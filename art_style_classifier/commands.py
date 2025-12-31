@@ -1,4 +1,4 @@
-"""Main CLI commands for the art style classifier."""
+"""Основные CLI команды для классификатора стилей искусства."""
 
 import json
 import sys
@@ -20,19 +20,19 @@ from art_style_classifier.utils.git import get_git_commit_id
 
 
 def _train_impl(cfg: DictConfig) -> None:
-    """Internal training implementation with Hydra.
+    """Внутренняя реализация обучения с Hydra.
 
     Args:
-        cfg: Hydra configuration
+        cfg: Конфигурация Hydra
     """
-    # Convert to our Config class
+    # Конвертируем в наш класс Config
     config = Config.from_hydra(cfg)
 
-    # Set global seeds for reproducibility
+    # Установим глобальные seeds для воспроизводимости
     try:
         pl.seed_everything(config.data.random_seed, workers=True)
     except TypeError:
-        # Older PL versions may not accept workers kwarg
+        # Более старые версии PL могут не принимать аргумент workers
         pl.seed_everything(config.data.random_seed)
 
     print("=" * 60)
@@ -49,27 +49,27 @@ def _train_impl(cfg: DictConfig) -> None:
     print(f" Epochs: {config.training.max_epochs}")
     print(f" Learning rate: {config.training.learning_rate}")
 
-    # Get git commit ID for reproducibility
+    # Получим ID коммита git для воспроизводимости
     git_commit_id = get_git_commit_id()
     print(f" Git commit: {git_commit_id}")
 
-    # Setup data module
-    print("\nSetting up data module...")
+    # Настроим модуль данных
+    print("\nНастройка модуля данных...")
     data_module = WikiArtDataModule(config.data)
     data_module.setup("fit")
 
-    # Create model
+    # Создадим модель
     arch = config.model.architecture
     if arch == "resnet18" or arch.startswith("baseline"):
-        print("\nCreating baseline ResNet18 model...")
+        print("\nСоздание базовой модели ResNet18...")
         model = BaselineModel(
             num_classes=config.model.num_classes,
             learning_rate=config.training.learning_rate,
-            freeze_backbone=True,  # Baseline: freeze backbone
+            freeze_backbone=True,  # Базовая модель: заморозить backbone
         )
     elif arch.startswith("efficientnet") or arch.startswith("efficient"):
-        print("\nCreating Advanced EfficientNet model...")
-        # Use AdvancedModel for EfficientNet family
+        print("\nСоздание расширенной модели EfficientNet...")
+        # Используем AdvancedModel для семейства EfficientNet
         model = AdvancedModel(
             num_classes=config.model.num_classes,
             learning_rate=config.training.learning_rate,
@@ -86,15 +86,15 @@ def _train_impl(cfg: DictConfig) -> None:
             f"Model architecture '{config.model.architecture}' not implemented yet."
         )
 
-    # Setup MLflow logger
-    print("\nSetting up MLflow logging...")
+    # Настроим логирование MLflow
+    print("\nНастройка логирования MLflow...")
     print(f" Tracking URI: {config.logging.tracking_uri}")
     mlflow_logger = MLFlowLogger(
         experiment_name=config.logging.experiment_name,
         tracking_uri=config.logging.tracking_uri,
     )
 
-    # Log hyperparameters and git commit
+    # Логируем гиперпараметры и коммит git
     hyperparams = {
         "model_architecture": config.model.architecture,
         "num_classes": config.model.num_classes,
@@ -109,8 +109,8 @@ def _train_impl(cfg: DictConfig) -> None:
     }
     mlflow_logger.log_hyperparams(hyperparams)
 
-    # Setup callbacks
-    # Create output directory (Hydra would do this automatically with decorator)
+    # Настроим callbacks
+    # Создадим выходную директорию (Hydra делает это автоматически с декоратором)
     from datetime import datetime
 
     output_base = Path("outputs")

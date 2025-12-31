@@ -7,13 +7,13 @@ from pathlib import Path
 
 
 def get_git_commit_id(repo_path: Path | None = None) -> str:
-    """Get current git commit ID.
+    """Получает текущий идентификатор коммита git.
 
     Args:
-        repo_path: Path to git repository root (default: current directory)
+        repo_path: Путь к корню репозитория git (по умолчанию: текущая директория)
 
     Returns:
-        Git commit hash, or 'unknown' if git is not available
+        Хеш коммита git, или 'unknown' если git не доступен
     """
     if repo_path is None:
         repo_path = Path.cwd()

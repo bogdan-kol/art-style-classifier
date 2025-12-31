@@ -1,4 +1,4 @@
-"""PyTorch Dataset and Lightning DataModule for WikiArt."""
+"""PyTorch Dataset и Lightning DataModule для WikiArt."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from art_style_classifier.config import DataConfig
 
 
 class WikiArtDataset(Dataset):
-    """PyTorch Dataset for WikiArt images."""
+    """Dataset PyTorch для изображений WikiArt."""
 
     def __init__(
         self,
@@ -27,36 +27,36 @@ class WikiArtDataset(Dataset):
         image_size: tuple[int, int] = (224, 224),
         is_train: bool = False,
     ) -> None:
-        """Initialize WikiArt dataset.
+        """Инициализация датасета WikiArt.
 
         Args:
-            samples_file: Path to samples.json metadata file
-            raw_dir: Root directory with train/val/test subdirectories
-            split: Which split to use
-            image_size: Target image size (height, width)
-            is_train: Whether this is training data (enables augmentation)
+            samples_file: Путь к файлу метаданных samples.json
+            raw_dir: Корневая директория с поддиректориями train/val/test
+            split: Какой split использовать
+            image_size: Целевой размер изображения (высота, ширина)
+            is_train: Это ли обучающие данные (включает аугментацию)
         """
         self.raw_dir = Path(raw_dir)
         self.split = split
         self.image_size = image_size
         self.is_train = is_train
 
-        # Load metadata
+        # Загружаем метаданные
         with samples_file.open(encoding="utf-8") as f:
             all_samples = json.load(f)
 
-        # Filter samples for this split
+        # Фильтруем samples для этого split
         self.samples = [s for s in all_samples if s["split"] == split]
 
-        # Build label to index mapping
+        # Строим отображение метка -> индекс
         unique_labels = sorted({s["label"] for s in self.samples})
         self.label_to_idx = {label: idx for idx, label in enumerate(unique_labels)}
         self.idx_to_label = {idx: label for label, idx in self.label_to_idx.items()}
         self.num_classes = len(unique_labels)
 
-        # Setup transforms
+        # Настраиваем трансформации
         if is_train:
-            # Baseline augmentation: RandomCrop + RandomFlip
+            # Базовая аугментация: RandomCrop + RandomFlip
             self.transform = transforms.Compose(
                 [
                     transforms.Resize((256, 256)),
@@ -69,7 +69,7 @@ class WikiArtDataset(Dataset):
                 ]
             )
         else:
-            # Validation/test: only resize and normalize
+            # Валидация/тест: только изменение размера и нормализация
             self.transform = transforms.Compose(
                 [
                     transforms.Resize(image_size),
@@ -81,33 +81,33 @@ class WikiArtDataset(Dataset):
             )
 
     def __len__(self) -> int:
-        """Return dataset size."""
+        """Возвращает размер датасета."""
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, int]:
-        """Get image and label by index.
+        """Получает изображение и метку по индексу.
 
         Args:
-            idx: Sample index
+            idx: Индекс образца
 
         Returns:
-            Tuple of (image tensor, label index)
+            Кортеж (тензор изображения, индекс метки)
         """
         sample = self.samples[idx]
         img_path = self.raw_dir / sample["path"]
 
-        # Load and transform image
+        # Загружаем и преобразуем изображение
         img = Image.open(img_path).convert("RGB")
         img_tensor = self.transform(img)
 
-        # Convert label string to index
+        # Преобразуем метку из строки в индекс
         label_str = sample["label"]
         label_idx = self.label_to_idx[label_str]
 
         return img_tensor, label_idx
 
     def get_class_distribution(self) -> dict[str, int]:
-        """Get distribution of samples per class."""
+        """Получает распределение образцов по классам."""
         distribution: dict[str, int] = {}
         for sample in self.samples:
             label = sample["label"]
@@ -116,23 +116,23 @@ class WikiArtDataset(Dataset):
 
 
 class WikiArtDataModule(pl.LightningDataModule):
-    """Lightning DataModule for WikiArt dataset."""
+    """Lightning DataModule для датасета WikiArt."""
 
     def __init__(self, config: DataConfig) -> None:
-        """Initialize DataModule.
+        """Инициализирует DataModule.
 
         Args:
-            config: Data configuration
+            config: Конфигурация данных
         """
         super().__init__()
         self.config = config
         self.raw_dir = Path(config.raw_dir)
         self.samples_file = self.raw_dir / "splits" / "samples.json"
 
-        # Normalize image_size from config into a well-typed tuple[int, int].
-        # Treat the incoming value as an untyped object so mypy doesn't
-        # mark the `isinstance` checks as unreachable when config
-        # annotations differ at runtime (e.g., OmegaConf lists).
+        # Нормализуем image_size из конфига в типизированный кортеж[int, int].
+        # Рассматриваем входное значение как нетипизированный объект, чтобы mypy не
+        # отмечал проверки isinstance как недостижимые, когда аннотации конфига
+        # отличаются во время выполнения (например, OmegaConf списки).
         from typing import Any
 
         image_size_raw: Any = config.image_size
@@ -141,7 +141,7 @@ class WikiArtDataModule(pl.LightningDataModule):
         else:
             self.image_size = (224, 224)
 
-        # Add train_subset_ratio with default if not present
+        # Добавляем train_subset_ratio с значением по умолчанию если отсутствует
         self.train_subset_ratio = getattr(config, "train_subset_ratio", 1.0)
 
         self.train_dataset: WikiArtDataset | Subset | None = None

@@ -23,7 +23,7 @@ class SampleInfo:
 
 
 def _save_image(img: Image.Image, out_path: Path) -> None:
-    """Save PIL image to disk, creating parent directories if needed."""
+    """Сохраняет изображение PIL на диск, создая родительские директории если необходимо."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path)
 
@@ -31,7 +31,7 @@ def _save_image(img: Image.Image, out_path: Path) -> None:
 def _split_indices(
     n_samples: int, seed: int, train_size: float, val_size: float, test_size: float
 ) -> tuple[list[int], list[int], list[int]]:
-    """Create train/val/test indices with given proportions."""
+    """Создает тренировочные/валидационные/тестовые индексы с данными пропорциями."""
     assert abs(train_size + val_size + test_size - 1.0) < 1e-6, "Splits must sum to 1"
 
     all_indices = list(range(n_samples))
@@ -54,12 +54,12 @@ def _split_indices(
 def download_command(
     use_dvc: bool = True, push: bool = False, max_samples: int | None = None
 ) -> None:
-    """Download the WikiArt dataset and prepare train/val/test splits.
+    """Загружает датасет WikiArt и подготавливает разделения train/val/test.
 
     Args:
-        use_dvc: Reserved for future integration with DVC (not used yet).
-        push: Reserved for future DVC push (not used yet).
-        max_samples: Maximum number of samples to download (for testing).
+        use_dvc: Зарезервировано для будущей интеграции DVC (не используется).
+        push: Зарезервировано для DVC push (не используется).
+        max_samples: Максимальное количество образцов для загружки (для тестирования).
     """
     cfg = DataConfig()
 
@@ -74,7 +74,7 @@ def download_command(
     # Загружаем датасет
     dataset = load_dataset("huggan/wikiart", split="train")
 
-    # Если указано максимальное количество samples, ограничиваем
+    # Если ограничиваем samples, ограничиваем датасет
     if max_samples and max_samples < len(dataset):
         print(f" Limiting to {max_samples} samples for testing")
         dataset = dataset.select(range(max_samples))

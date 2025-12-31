@@ -12,10 +12,10 @@ from torchvision import transforms
 
 app = FastAPI(title="Art Style Classifier API")
 
-# Lazy-loaded model (populated on startup)
+# Модель загружается при запуске приложения
 MODEL = None
 
-# Simple preprocess pipeline (matches training image size)
+# Размер входного изображения
 IMAGE_SIZE = (224, 224)
 preprocess = transforms.Compose(
     [
@@ -32,10 +32,10 @@ def read_imagefile(file_bytes: bytes) -> Image.Image:
 
 @app.on_event("startup")  # type: ignore[misc]
 def load_model() -> None:
-    """Load model from checkpoint if provided via `MODEL_CKPT` env var.
+    """Загружает модель из контрольной точки если предоставлена через переменную MODEL_CKPT.
 
-    If no checkpoint is provided the endpoint will still run but return
-    predictions from a freshly initialized model.
+    Если контрольная точка не предоставлена, эндпоинт будет использовать
+    свежеинициализированную модель для предсказаний.
     """
     global MODEL
     ckpt = os.environ.get("MODEL_CKPT", "")
@@ -43,8 +43,7 @@ def load_model() -> None:
 
     try:
         if ckpt and os.path.exists(ckpt):
-            # Import here to avoid pulling heavy deps on module import
-
+            # Загружаем модель из контрольной точки
             if arch.startswith("efficient"):
                 from art_style_classifier.models.advanced import AdvancedModel
 
@@ -56,7 +55,7 @@ def load_model() -> None:
 
             MODEL = ModelClass.load_from_checkpoint(ckpt, map_location="cpu")
         else:
-            # Fallback: create an untrained model instance
+            # Если нет контрольной точки, создаём необученную модель
             if arch.startswith("efficient"):
                 from art_style_classifier.models.advanced import AdvancedModel
 
@@ -100,10 +99,10 @@ async def predict(
     image_base64: Optional[str] = None,
     top_k: int = Query(5, ge=1, le=20),
 ) -> dict[str, Any]:
-    """Predict top-k classes for an uploaded image.
+    """Предсказывает top-k классов для загруженного изображения.
 
-    Accepts either a multipart file upload (`file`) or a base64 string
-    in `image_base64`. Returns top-k class indices and probabilities.
+    Принимает либо загрузку файла через multipart, либо строку base64.
+    Возвращает индексы классов и их вероятности.
     """
     if MODEL is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
